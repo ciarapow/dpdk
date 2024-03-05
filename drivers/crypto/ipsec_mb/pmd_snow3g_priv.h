@@ -8,10 +8,7 @@
 #include "ipsec_mb_private.h"
 
 #define SNOW3G_IV_LENGTH 16
-#define SNOW3G_MAX_BURST 8
-#define BYTE_LEN 8
 #define SNOW3G_DIGEST_LENGTH 4
-#define SNOW3G_MAX_KEY_SIZE  128
 
 uint8_t pmd_driver_id_snow3g;
 
@@ -62,24 +59,6 @@ static const struct rte_cryptodev_capabilities snow3g_capabilities[] = {
 		}, }
 	},
 	RTE_CRYPTODEV_END_OF_CAPABILITIES_LIST()
-};
-
-/** SNOW 3G private session structure */
-struct snow3g_session {
-	enum ipsec_mb_operation op;
-	enum rte_crypto_auth_operation auth_op;
-	snow3g_key_schedule_t pKeySched_cipher;
-	snow3g_key_schedule_t pKeySched_hash;
-	uint16_t cipher_iv_offset;
-	uint16_t auth_iv_offset;
-} __rte_cache_aligned;
-
-struct snow3g_qp_data {
-	uint8_t temp_digest[SNOW3G_DIGEST_LENGTH];
-	/**< Buffer used to store the digest generated
-	 * by the driver when verifying a digest provided
-	 * by the user (using authentication verify operation)
-	 */
 };
 
 #endif /* _PMD_SNOW3G_PRIV_H_ */

@@ -10,7 +10,6 @@
 #define ZUC_IV_KEY_LENGTH 16
 #define ZUC_DIGEST_LENGTH 4
 #define ZUC_MAX_BURST 16
-#define BYTE_LEN 8
 
 uint8_t pmd_driver_id_zuc;
 
@@ -61,25 +60,6 @@ static const struct rte_cryptodev_capabilities zuc_capabilities[] = {
 		}, }
 	},
 	RTE_CRYPTODEV_END_OF_CAPABILITIES_LIST()
-};
-
-/** ZUC private session structure */
-struct zuc_session {
-	enum ipsec_mb_operation op;
-	enum rte_crypto_auth_operation auth_op;
-	uint8_t pKey_cipher[ZUC_IV_KEY_LENGTH];
-	uint8_t pKey_hash[ZUC_IV_KEY_LENGTH];
-	uint16_t cipher_iv_offset;
-	uint16_t auth_iv_offset;
-} __rte_cache_aligned;
-
-struct zuc_qp_data {
-
-	uint8_t temp_digest[ZUC_MAX_BURST][ZUC_DIGEST_LENGTH];
-	/* *< Buffers used to store the digest generated
-	 * by the driver when verifying a digest provided
-	 * by the user (using authentication verify operation)
-	 */
 };
 
 #endif /* _PMD_ZUC_PRIV_H_ */

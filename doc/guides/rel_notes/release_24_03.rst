@@ -162,6 +162,9 @@ New Features
 * **Updated ipsec_mb crypto driver.**
 
   * Bump minimum IPSec Multi-buffer version to 1.4 for SW PMDs.
+  * Kasumi, Snow3G, ChaChaPoly and ZUC PMDs now share the job API codepath
+    with AESNI_MB PMD. Depending on the architecture, the performance of ZUC
+    crypto PMD is approximately 10% less for small fixed packet sizes.
 
 * **Updated Marvell cnxk crypto driver.**
 

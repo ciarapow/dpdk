@@ -8,6 +8,8 @@
 
 RTE_DEFINE_PER_LCORE(pid_t, pid);
 
+uint8_t pmd_driver_id_aesni_mb;
+
 struct aesni_mb_op_buf_data {
 	struct rte_mbuf *m;
 	uint32_t offset;
@@ -692,7 +694,7 @@ aesni_mb_set_session_aead_parameters(const IMB_MGR *mb_mgr,
 }
 
 /** Configure a aesni multi-buffer session from a crypto xform chain */
-static int
+int
 aesni_mb_session_configure(IMB_MGR *mb_mgr,
 		void *priv_sess,
 		const struct rte_crypto_sym_xform *xform)
@@ -2039,7 +2041,7 @@ set_job_null_op(IMB_JOB *job, struct rte_crypto_op *op)
 	return job;
 }
 
-static uint16_t
+uint16_t
 aesni_mb_dequeue_burst(void *queue_pair, struct rte_crypto_op **ops,
 		uint16_t nb_ops)
 {
@@ -2227,7 +2229,7 @@ verify_sync_dgst(struct rte_crypto_sym_vec *vec,
 	return k;
 }
 
-static uint32_t
+uint32_t
 aesni_mb_process_bulk(struct rte_cryptodev *dev __rte_unused,
 	struct rte_cryptodev_sym_session *sess, union rte_crypto_sym_ofs sofs,
 	struct rte_crypto_sym_vec *vec)
