@@ -85,7 +85,8 @@ and the external crypto libraries supported by them:
    18.05 - 19.02  Multi-buffer library 0.49 - 0.52
    19.05 - 20.08  Multi-buffer library 0.52 - 0.55
    20.11 - 21.08  Multi-buffer library 0.53 - 1.3*
-   21.11+         Multi-buffer library 1.0  - 1.5*
+   21.11 - 23.11  Multi-buffer library 1.0  - 1.5*
+   24.03+         Multi-buffer library 1.4  - 1.5*
    =============  ================================
 
 \* Multi-buffer library 1.0 or newer only works for Meson but not Make build system.

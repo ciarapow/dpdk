@@ -210,13 +210,9 @@ aesni_mb_set_session_auth_parameters(const IMB_MGR *mb_mgr,
 			}
 		} else if (xform->auth.key.length == 32) {
 			sess->template_job.hash_alg = IMB_AUTH_ZUC256_EIA3_BITLEN;
-#if IMB_VERSION(1, 2, 0) < IMB_VERSION_NUM
 			if (sess->auth.req_digest_len != 4 &&
 					sess->auth.req_digest_len != 8 &&
 					sess->auth.req_digest_len != 16) {
-#else
-			if (sess->auth.req_digest_len != 4) {
-#endif
 				IPSEC_MB_LOG(ERR, "Invalid digest size\n");
 				return -EINVAL;
 			}
@@ -845,11 +841,9 @@ aesni_mb_session_configure(IMB_MGR *mb_mgr,
 		}
 	}
 
-#if IMB_VERSION(1, 3, 0) < IMB_VERSION_NUM
 	sess->session_id = imb_set_session(mb_mgr, &sess->template_job);
 	sess->pid = getpid();
 	RTE_PER_LCORE(pid) = sess->pid;
-#endif
 
 	return 0;
 }
@@ -982,9 +976,7 @@ aesni_mb_set_docsis_sec_session_parameters(
 		goto error_exit;
 	}
 
-#if IMB_VERSION(1, 3, 0) < IMB_VERSION_NUM
 	ipsec_sess->session_id = imb_set_session(mb_mgr, &ipsec_sess->template_job);
-#endif
 
 error_exit:
 	free_mb_mgr(mb_mgr);
@@ -1239,7 +1231,6 @@ imb_lib_support_sgl_algo(IMB_CIPHER_MODE alg)
 	return 0;
 }
 
-#if IMB_VERSION(1, 2, 0) < IMB_VERSION_NUM
 static inline int
 single_sgl_job(IMB_JOB *job, struct rte_crypto_op *op,
 		int oop, uint32_t offset, struct rte_mbuf *m_src,
@@ -1324,7 +1315,6 @@ single_sgl_job(IMB_JOB *job, struct rte_crypto_op *op,
 	job->sgl_io_segs = sgl_segs;
 	return 0;
 }
-#endif
 
 static inline int
 multi_sgl_job(IMB_JOB *job, struct rte_crypto_op *op,
@@ -1394,9 +1384,7 @@ set_gcm_job(IMB_MGR *mb_mgr, IMB_JOB *job, const uint8_t sgl,
 		job->msg_len_to_hash_in_bytes = 0;
 		job->msg_len_to_cipher_in_bytes = 0;
 		job->cipher_start_src_offset_in_bytes = 0;
-#if IMB_VERSION(1, 3, 0) < IMB_VERSION_NUM
 		imb_set_session(mb_mgr, job);
-#endif
 	} else {
 		job->hash_start_src_offset_in_bytes =
 				op->sym->aead.data.offset;
@@ -1424,13 +1412,11 @@ set_gcm_job(IMB_MGR *mb_mgr, IMB_JOB *job, const uint8_t sgl,
 		job->src = NULL;
 		job->dst = NULL;
 
-#if IMB_VERSION(1, 2, 0) < IMB_VERSION_NUM
 		if (m_src->nb_segs <= MAX_NUM_SEGS)
 			return single_sgl_job(job, op, oop,
 					m_offset, m_src, m_dst,
 					qp_data->sgl_segs);
 		else
-#endif
 			return multi_sgl_job(job, op, oop,
 					m_offset, m_src, m_dst, mb_mgr);
 	} else {
@@ -1520,10 +1506,6 @@ set_mb_job_params(IMB_JOB *job, struct ipsec_mb_qp *qp,
 	uint8_t sgl = 0;
 	uint8_t lb_sgl = 0;
 
-#if IMB_VERSION(1, 3, 0) >= IMB_VERSION_NUM
-	(void) pid;
-#endif
-
 	session = ipsec_mb_get_session_private(qp, op);
 	if (session == NULL) {
 		op->status = RTE_CRYPTO_OP_STATUS_INVALID_SESSION;
@@ -1533,12 +1515,10 @@ set_mb_job_params(IMB_JOB *job, struct ipsec_mb_qp *qp,
 	const IMB_CIPHER_MODE cipher_mode =
 			session->template_job.cipher_mode;
 
-#if IMB_VERSION(1, 3, 0) < IMB_VERSION_NUM
 	if (session->pid != pid) {
 		memcpy(job, &session->template_job, sizeof(IMB_JOB));
 		imb_set_session(mb_mgr, job);
 	} else if (job->session_id != session->session_id)
-#endif
 		memcpy(job, &session->template_job, sizeof(IMB_JOB));
 
 	if (!op->sym->m_dst) {
@@ -1579,9 +1559,7 @@ set_mb_job_params(IMB_JOB *job, struct ipsec_mb_qp *qp,
 			job->u.GCM.ctx = &qp_data->gcm_sgl_ctx;
 			job->cipher_mode = IMB_CIPHER_GCM_SGL;
 			job->hash_alg = IMB_AUTH_GCM_SGL;
-#if IMB_VERSION(1, 3, 0) < IMB_VERSION_NUM
 			imb_set_session(mb_mgr, job);
-#endif
 		}
 		break;
 	case IMB_AUTH_AES_GMAC_128:
@@ -1606,9 +1584,7 @@ set_mb_job_params(IMB_JOB *job, struct ipsec_mb_qp *qp,
 			job->u.CHACHA20_POLY1305.ctx = &qp_data->chacha_sgl_ctx;
 			job->cipher_mode = IMB_CIPHER_CHACHA20_POLY1305_SGL;
 			job->hash_alg = IMB_AUTH_CHACHA20_POLY1305_SGL;
-#if IMB_VERSION(1, 3, 0) < IMB_VERSION_NUM
 			imb_set_session(mb_mgr, job);
-#endif
 		}
 		break;
 	default:
@@ -1804,13 +1780,11 @@ set_mb_job_params(IMB_JOB *job, struct ipsec_mb_qp *qp,
 		if (lb_sgl)
 			return handle_sgl_linear(job, op, m_offset, session);
 
-#if IMB_VERSION(1, 2, 0) < IMB_VERSION_NUM
 		if (m_src->nb_segs <= MAX_NUM_SEGS)
 			return single_sgl_job(job, op, oop,
 					m_offset, m_src, m_dst,
 					qp_data->sgl_segs);
 		else
-#endif
 			return multi_sgl_job(job, op, oop,
 					m_offset, m_src, m_dst, mb_mgr);
 	}
@@ -2130,7 +2104,6 @@ set_job_null_op(IMB_JOB *job, struct rte_crypto_op *op)
 	return job;
 }
 
-#if IMB_VERSION(1, 2, 0) < IMB_VERSION_NUM
 static uint16_t
 aesni_mb_dequeue_burst(void *queue_pair, struct rte_crypto_op **ops,
 		uint16_t nb_ops)
@@ -2263,144 +2236,7 @@ aesni_mb_dequeue_burst(void *queue_pair, struct rte_crypto_op **ops,
 
 	return processed_jobs;
 }
-#else
 
-/**
- * Process a completed IMB_JOB job and keep processing jobs until
- * get_completed_job return NULL
- *
- * @param qp		Queue Pair to process
- * @param mb_mgr	IMB_MGR to use
- * @param job		IMB_JOB job
- * @param ops		crypto ops to fill
- * @param nb_ops	number of crypto ops
- *
- * @return
- * - Number of processed jobs
- */
-static unsigned
-handle_completed_jobs(struct ipsec_mb_qp *qp, IMB_MGR *mb_mgr,
-		IMB_JOB *job, struct rte_crypto_op **ops,
-		uint16_t nb_ops)
-{
-	struct rte_crypto_op *op = NULL;
-	uint16_t processed_jobs = 0;
-
-	while (job != NULL) {
-		op = post_process_mb_job(qp, job);
-
-		if (op) {
-			ops[processed_jobs++] = op;
-			qp->stats.dequeued_count++;
-		} else {
-			qp->stats.dequeue_err_count++;
-			break;
-		}
-		if (processed_jobs == nb_ops)
-			break;
-
-		job = IMB_GET_COMPLETED_JOB(mb_mgr);
-	}
-
-	return processed_jobs;
-}
-
-static inline uint16_t
-flush_mb_mgr(struct ipsec_mb_qp *qp, IMB_MGR *mb_mgr,
-		struct rte_crypto_op **ops, uint16_t nb_ops)
-{
-	int processed_ops = 0;
-
-	/* Flush the remaining jobs */
-	IMB_JOB *job = IMB_FLUSH_JOB(mb_mgr);
-
-	if (job)
-		processed_ops += handle_completed_jobs(qp, mb_mgr, job,
-				&ops[processed_ops], nb_ops - processed_ops);
-
-	return processed_ops;
-}
-
-static uint16_t
-aesni_mb_dequeue_burst(void *queue_pair, struct rte_crypto_op **ops,
-		uint16_t nb_ops)
-{
-	struct ipsec_mb_qp *qp = queue_pair;
-	IMB_MGR *mb_mgr = qp->mb_mgr;
-	struct rte_crypto_op *op;
-	IMB_JOB *job;
-	int retval, processed_jobs = 0;
-	pid_t pid = 0;
-
-	if (unlikely(nb_ops == 0 || mb_mgr == NULL))
-		return 0;
-
-	uint8_t digest_idx = qp->digest_idx;
-
-	do {
-		/* Get next free mb job struct from mb manager */
-		job = IMB_GET_NEXT_JOB(mb_mgr);
-		if (unlikely(job == NULL)) {
-			/* if no free mb job structs we need to flush mb_mgr */
-			processed_jobs += flush_mb_mgr(qp, mb_mgr,
-					&ops[processed_jobs],
-					nb_ops - processed_jobs);
-
-			if (nb_ops == processed_jobs)
-				break;
-
-			job = IMB_GET_NEXT_JOB(mb_mgr);
-		}
-
-		/*
-		 * Get next operation to process from ingress queue.
-		 * There is no need to return the job to the IMB_MGR
-		 * if there are no more operations to process, since the IMB_MGR
-		 * can use that pointer again in next get_next calls.
-		 */
-		retval = rte_ring_dequeue(qp->ingress_queue, (void **)&op);
-		if (retval < 0)
-			break;
-
-		if (op->sess_type == RTE_CRYPTO_OP_SECURITY_SESSION)
-			retval = set_sec_mb_job_params(job, qp, op,
-						&digest_idx);
-		else
-			retval = set_mb_job_params(job, qp, op,
-				&digest_idx, mb_mgr, pid);
-
-		if (unlikely(retval != 0)) {
-			qp->stats.dequeue_err_count++;
-			set_job_null_op(job, op);
-		}
-
-		/* Submit job to multi-buffer for processing */
-#ifdef RTE_LIBRTE_PMD_AESNI_MB_DEBUG
-		job = IMB_SUBMIT_JOB(mb_mgr);
-#else
-		job = IMB_SUBMIT_JOB_NOCHECK(mb_mgr);
-#endif
-		/*
-		 * If submit returns a processed job then handle it,
-		 * before submitting subsequent jobs
-		 */
-		if (job)
-			processed_jobs += handle_completed_jobs(qp, mb_mgr,
-					job, &ops[processed_jobs],
-					nb_ops - processed_jobs);
-
-	} while (processed_jobs < nb_ops);
-
-	qp->digest_idx = digest_idx;
-
-	if (processed_jobs < 1)
-		processed_jobs += flush_mb_mgr(qp, mb_mgr,
-				&ops[processed_jobs],
-				nb_ops - processed_jobs);
-
-	return processed_jobs;
-}
-#endif
 static inline int
 check_crypto_sgl(union rte_crypto_sym_ofs so, const struct rte_crypto_sgl *sgl)
 {

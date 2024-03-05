@@ -159,6 +159,10 @@ New Features
   * Added support for GEN LCE (1454) device, for AES-GCM only.
   * Enabled support for virtual QAT - vQAT (0da5) devices in QAT crypto driver.
 
+* **Updated ipsec_mb crypto driver.**
+
+  * Bump minimum IPSec Multi-buffer version to 1.4 for SW PMDs.
+
 * **Updated Marvell cnxk crypto driver.**
 
   * Added support for Rx inject in crypto_cn10k.

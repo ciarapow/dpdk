@@ -72,7 +72,8 @@ and the external crypto libraries supported by them:
    =============  ================================
    DPDK version   Crypto library version
    =============  ================================
-   21.11+         Multi-buffer library 1.0-1.5*
+   21.11 - 23.11  Multi-buffer library 1.0-1.5*
+   24.03+         Multi-buffer library 1.4-1.5*
    =============  ================================
 
 \* Multi-buffer library 1.0 or newer only works for Meson but not Make build system.

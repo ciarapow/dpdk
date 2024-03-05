@@ -96,7 +96,8 @@ and the external crypto libraries supported by them:
    =============  ================================
    16.04 - 19.11  LibSSO SNOW3G
    20.02 - 21.08  Multi-buffer library 0.53 - 1.3*
-   21.11+         Multi-buffer library 1.0  - 1.5*
+   21.11 - 23.11  Multi-buffer library 1.0  - 1.5*
+   24.03+         Multi-buffer library 1.4  - 1.5*
    =============  ================================
 
 \* Multi-buffer library 1.0 or newer only works for Meson but not Make build system.
